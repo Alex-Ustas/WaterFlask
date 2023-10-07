@@ -1,0 +1,75 @@
+# Save to csv, load from csv
+
+import os
+
+FLASK_CSV = 'data/flasks.csv'
+MENU_CSV = 'data/menu.csv'
+STEPS_FILE = 'data/steps.txt'
+
+
+def load_menu(menu_id: str) -> list:
+    """Load menu from csv to list"""
+    menu = list()
+    if not os.path.exists(MENU_CSV):
+        return menu
+    with open(MENU_CSV, 'r', encoding='utf-8') as file:
+        all_lines = file.readlines()
+    for line in all_lines:
+        line = line.replace('\n', '')
+        items = line.split(';')
+        if items[0] == menu_id:
+            for i in range(1, len(items)):
+                menu.append(items[i].split(','))
+            break
+    return menu
+
+
+def load_flasks() -> dict:
+    """Load data from csv to dict"""
+    flasks = dict()
+    if not os.path.exists(FLASK_CSV):
+        return flasks
+    with open(FLASK_CSV, 'r', encoding='utf-8') as file:
+        all_lines = file.readlines()
+    for line in all_lines:
+        line = line.replace('\n', '')
+        if line:
+            items = line.split(';')
+            flasks[items[0]] = items[1:]
+    return flasks
+
+
+def save_flask(flask: list):
+    """Write flask to file"""
+    flasks = load_flasks()
+    last = max(list(map(int, flasks.keys()))) + 1
+
+    if os.path.exists(FLASK_CSV):
+        file = open(FLASK_CSV, 'a', encoding='utf-8')
+    else:
+        file = open(FLASK_CSV, 'w', encoding='utf-8')
+    line = f'{last};' + ';'.join(flask)
+    file.write(line + '\n')
+    file.close()
+
+
+def save_steps(n: int, step: str, flasks: list, first=None):
+    if os.path.exists(STEPS_FILE):
+        file = open(STEPS_FILE, 'a', encoding='utf-8')
+    else:
+        file = open(STEPS_FILE, 'w', encoding='utf-8')
+    if not (first is None):
+        file.write('_' * 40 + '\n')
+        file.write(f'\t\t\t\t{flasks_to_line(first)}\n')
+    file.write(f'{n:04d}  {step}:\t{flasks_to_line(flasks)}\n')
+    file.close()
+
+
+def flasks_to_line(flasks: list) -> str:
+    line = ''
+    for flask in flasks:
+        flask = flask.strip().upper()
+        if len(flask) < 4:
+            flask += '.' * (4 - len(flask))
+        line += f' [{flask}]'
+    return line.strip()
