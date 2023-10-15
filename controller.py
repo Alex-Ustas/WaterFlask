@@ -1,5 +1,7 @@
 import loader
 
+EMPTY_FLASK = ' ' * 4
+
 
 def solve(num: str, **flasks):
     show_flasks(flasks[num])
@@ -59,36 +61,49 @@ def generate_game(num='0', **flasks):
 
 def create_game(num='0', **kwargs):
     num = flask_number()
+    symbols = list(chr(i) for i in range(ord('A'), ord('A') + num))
+    symbols = ''.join(symbols)
+    amount = '0' * num
     flasks = dict()
     flasks['0'] = list()
     print('Enter flasks:')
     for i in range(num):
+        print(f'{symbols}\n{amount}')
         flask = input(f'{i + 1}: ').upper()
-        if check_flask(flask):
+        if check_flask(flask, symbols):
             if flasks['0']:
                 flasks['0'].append(flask)
             else:
                 flasks['0'] = [flask]
-        while not check_flask(flask):
+        while not check_flask(flask, symbols):
             print('Wrong input')
             flask = input(f'{i + 1}: ').upper()
-            if check_flask(flask):
+            if check_flask(flask, symbols):
                 if flasks['0']:
                     flasks['0'].append(flask)
                 else:
                     flasks['0'] = [flask]
-    menu(loader.load_menu('create'), **flasks)
+        q = list(map(int, list(j for j in amount)))
+        for j in range(len(symbols)):
+            if symbols[j] in flask:
+                q[j] += flask.count(symbols[j])
+        amount = ''.join(list(map(str, q)))
+    flasks['0'].append(EMPTY_FLASK)
+    flasks['0'].append(EMPTY_FLASK)
+    menu(loader.load_menu('create'), '0', **flasks)
 
 
-def save_flask(num='0', **kwargs):
-    loader.save_flask(kwargs['0'])
+def save_flask(num='0', **flasks):
+    while EMPTY_FLASK in flasks[num]:
+        flasks[num].remove(EMPTY_FLASK)
+    loader.save_flask(flasks[num])
 
 
-def check_flask(flask: str):
+def check_flask(flask: str, symbols: str) -> int:
     if len(flask) != 4:
         return 0
-    for part in flask:
-        if not part.isalpha():
+    for char in flask:
+        if char not in symbols:
             return 0
     return 1
 
@@ -116,8 +131,8 @@ def load_flask(num='z', **kwargs):
     if flasks[num][-1] == 'test':
         flasks[num] = flasks[num][:-1]
     else:
-        flasks[num].append(' ' * 4)
-        flasks[num].append(' ' * 4)
+        flasks[num].append(EMPTY_FLASK)
+        flasks[num].append(EMPTY_FLASK)
     menu(loader.load_menu('load'), num, **flasks)
 
 
@@ -155,10 +170,10 @@ def menu(menu_items: list, num='0', **kwargs):
                 func = eval(func)
                 func(num, **kwargs)
         elif item == '0':
-            print('\n')
             break
         else:
             print('Wrong number')
+        print()
 
 
 def main_menu():
