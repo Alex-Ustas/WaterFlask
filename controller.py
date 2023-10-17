@@ -1,56 +1,66 @@
 import loader
 
-EMPTY_FLASK = ' ' * 4
+COLORS = 4
+EMPTY_FLASK = ' ' * COLORS
 
 
 def solve(num: str, **flasks):
     show_flasks(flasks[num])
-    flasks, steps, cases, status = solving(flasks[num], [], [], 'In')
+    flasks[num] = list(i.strip() for i in flasks[num])
+    _, steps, __, status = solving(flasks[num], {}, [], 'In')
     if status == 'Ok':
-        for i in range(len(steps)):
-            print(f'{i + 1:04d}  {steps[i]}:\t{loader.flasks_to_line(cases[i])}')
+        for key, item in steps.items():
+            print(f'{key:04d}  {item[0]}:\t{loader.flasks_to_line(item[1])}')
+        loader.save_steps(steps, flasks[num])
     else:
-        print(steps)
+        print('Cannot be resolved!')
 
 
-def solving(flasks: list, steps: list, cases: list, status: str) -> (list, list, list, str):
+def solving(flasks: list, steps: dict, cases: list, status: str) -> (list, dict, list, str):
     for flask in flasks:
         if flask != '':
-            if len(flask.replace(flask[0], '')) > 0 or len(flask) < 4:
+            if len(flask.replace(flask[0], '')) > 0 or len(flask) < COLORS:
                 break
     else:
         return flasks, steps, cases, 'Ok'
+
     for i in range(len(flasks)):
-        flask_from = flasks[i].strip()
-        if flask_from == '' or len(flask_from.replace(flask_from[0], '')) == 0 and len(flask_from) == 4:
+        if flask != '':
+            if len(flask.replace(flask[0], '')) == 0 and len(flask) < COLORS:
+                for j in range(len(flasks)):
+                    if j != i and flasks[j] != '':
+                        pass
+
+    for i in range(len(flasks)):
+        flask_from = flasks[i]
+        if flask_from == '' or len(flask_from.replace(flask_from[0], '')) == 0 and len(flask_from) == COLORS:
             continue
         color = flask_from[-1]
         for j in range(len(flasks)):
             if j != i:
-                flask_to = flasks[j].strip()
+                flask_to = flasks[j]
                 if flask_to == '' and len(flask_from.replace(flask_from[0], '')) == 0:
                     continue
-                if flask_to == '' or flask_to[-1] == color and len(flask_to) < 4:
+                if flask_to == '' or flask_to[-1] == color and len(flask_to) < COLORS:
                     new = list()
                     for k in range(len(flasks)):
                         if k == i:
                             new.append(flasks[k][:-1])
                         elif k == j:
-                            new.append(flasks[k].strip() + color)
+                            new.append(flasks[k] + color)
                         else:
-                            new.append(flasks[k].strip())
+                            new.append(flasks[k])
                     if new in cases:
                         continue
                     else:
-                        steps.append(f'{i + 1} -> {j + 1}')
+                        last_step = 0 if steps == {} else max(steps.keys())
+                        steps[last_step + 1] = [f'{i + 1} -> {j + 1}', new]
                         cases.append(new)
-                        if len(cases) == 1:
-                            loader.save_steps(1, steps[-1], new, flasks)
-                        else:
-                            loader.save_steps(len(cases), steps[-1], new)
                         new, steps, cases, status = solving(new, steps, cases, 'In')
                         if status == 'Ok':
-                            return new, steps, cases, status
+                            return new, steps, cases, 'Ok'
+    if steps:
+        del steps[max(steps.keys())]
     return flasks, steps, cases, 'Failed'
 
 
@@ -100,7 +110,7 @@ def save_flask(num='0', **flasks):
 
 
 def check_flask(flask: str, symbols: str) -> int:
-    if len(flask) != 4:
+    if len(flask) != COLORS:
         return 0
     for char in flask:
         if char not in symbols:
