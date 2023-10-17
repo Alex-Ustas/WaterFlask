@@ -53,13 +53,13 @@ def save_flask(flask: list):
     file.close()
 
 
-def save_steps(steps: dict, flasks: list):
+def save_steps(steps: dict, flasks: list, num: int):
     if os.path.exists(STEPS_FILE):
         file = open(STEPS_FILE, 'a', encoding='utf-8')
     else:
         file = open(STEPS_FILE, 'w', encoding='utf-8')
     file.write('_' * 40 + '\n')
-    file.write(f'\t\t\t\t{flasks_to_line(flasks)}\n')
+    file.write(f'{num:04d}\t\t\t{flasks_to_line(flasks)}\n')
     for key, item in steps.items():
         file.write(f'{key:04d}  {item[0]}:\t{flasks_to_line(item[1])}\n')
     file.close()

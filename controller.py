@@ -11,7 +11,7 @@ def solve(num: str, **flasks):
     if status == 'Ok':
         for key, item in steps.items():
             print(f'{key:04d}  {item[0]}:\t{loader.flasks_to_line(item[1])}')
-        loader.save_steps(steps, flasks[num])
+        loader.save_steps(steps, flasks[num], int(num))
     else:
         print('Cannot be resolved!')
 
@@ -25,12 +25,62 @@ def solving(flasks: list, steps: dict, cases: list, status: str) -> (list, dict,
         return flasks, steps, cases, 'Ok'
 
     for i in range(len(flasks)):
-        if flask != '':
-            if len(flask.replace(flask[0], '')) == 0 and len(flask) < COLORS:
+        flask_from = flasks[i]
+        if flask_from != '':
+            color = flask_from[-1]
+            # check one color in two flasks
+            if len(flask_from.replace(color, '')) == 0 and len(flask_from) < COLORS:
                 for j in range(len(flasks)):
-                    if j != i and flasks[j] != '':
-                        pass
+                    flask_to = flasks[j]
+                    if j != i and flask_to != '' and len(flask_to.replace(color, '')) == 0:
+                        new = list()
+                        for k in range(len(flasks)):
+                            if k == i:
+                                new.append('')
+                            elif k == j:
+                                new.append(color * (len(flask_from) + len(flask_to)))
+                            else:
+                                new.append(flasks[k])
+                        if new in cases:
+                            continue
+                        else:
+                            last_step = 0 if steps == {} else max(steps.keys())
+                            steps[last_step + 1] = [f'{i + 1} -> {j + 1}', new]
+                            cases.append(new)
+                            new, steps, cases, status = solving(new, steps, cases, 'In')
+                            if status == 'Ok':
+                                return new, steps, cases, 'Ok'
+            # check full stack
+            else:
+                part = ''
+                for k in range(len(flask_from) - 1, 0, -1):
+                    if flask_from[k] == color:
+                        part += color
+                    else:
+                        break
+                for j in range(len(flasks)):
+                    flask_to = flasks[j]
+                    if j != i and flask_to != '' and len(flask_to.replace(color, '')) == 0 \
+                            and len(flask_to) + len(part) == COLORS:
+                        new = list()
+                        for k in range(len(flasks)):
+                            if k == i:
+                                new.append(flask_from[:-len(part)])
+                            elif k == j:
+                                new.append(color * COLORS)
+                            else:
+                                new.append(flasks[k])
+                        if new in cases:
+                            continue
+                        else:
+                            last_step = 0 if steps == {} else max(steps.keys())
+                            steps[last_step + 1] = [f'{i + 1} -> {j + 1}', new]
+                            cases.append(new)
+                            new, steps, cases, status = solving(new, steps, cases, 'In')
+                            if status == 'Ok':
+                                return new, steps, cases, 'Ok'
 
+    # check other cases
     for i in range(len(flasks)):
         flask_from = flasks[i]
         if flask_from == '' or len(flask_from.replace(flask_from[0], '')) == 0 and len(flask_from) == COLORS:
