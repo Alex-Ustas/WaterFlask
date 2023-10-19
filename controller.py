@@ -154,9 +154,10 @@ def create_game(num='0', **kwargs):
 
 
 def save_flask(num='0', **flasks):
-    while EMPTY_FLASK in flasks[num]:
-        flasks[num].remove(EMPTY_FLASK)
-    loader.save_flask(flasks[num])
+    flask = flasks[num].copy()
+    while EMPTY_FLASK in flask:
+        flask.remove(EMPTY_FLASK)
+    loader.save_flask(flask)
 
 
 def check_flask(flask: str, symbols: str) -> int:
