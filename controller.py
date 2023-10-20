@@ -1,27 +1,34 @@
-import loader
+import loader, view
 
 COLORS = 4
 EMPTY_FLASK = ' ' * COLORS
 
 
-def solve(num: str, **flasks):
-    show_flasks(flasks[num])
-    flasks[num] = list(i.strip() for i in flasks[num])
-    _, steps, __, status = solving(flasks[num], {}, [], 'In')
-    if status == 'Ok':
-        for key, item in steps.items():
-            print(f'{key:04d}  {item[0]}:\t{loader.flasks_to_line(item[1])}')
-        loader.save_steps(steps, flasks[num], int(num))
-    else:
-        print('Cannot be resolved!')
-
-
-def solving(flasks: list, steps: dict, cases: list, status: str) -> (list, dict, list, str):
+def game_over(flasks: list) -> bool:
     for flask in flasks:
         if flask != '':
             if len(flask.replace(flask[0], '')) > 0 or len(flask) < COLORS:
                 break
     else:
+        return True
+    return False
+
+
+def solve(num: str, **flasks):
+    flasks[num].append(EMPTY_FLASK)
+    flasks[num].append(EMPTY_FLASK)
+    view.show_flasks(flasks[num])
+    flasks[num] = list(i.strip() for i in flasks[num])
+    _, steps, __, status = solving(flasks[num], {}, [], 'In')
+    if status == 'Ok':
+        view.show_steps(steps)
+        loader.save_steps(steps, flasks[num], int(num))
+    else:
+        view.print_text('Cannot be resolved!', 'critical')
+
+
+def solving(flasks: list, steps: dict, cases: list, status: str) -> (list, dict, list, str):
+    if game_over(flasks):
         return flasks, steps, cases, 'Ok'
 
     for i in range(len(flasks)):
@@ -115,8 +122,7 @@ def solving(flasks: list, steps: dict, cases: list, status: str) -> (list, dict,
 
 
 def generate_game(num='0', **flasks):
-    flask = flask_number()
-    print(flask)
+    view.show_colors()
 
 
 def create_game(num='0', **kwargs):
@@ -126,9 +132,9 @@ def create_game(num='0', **kwargs):
     amount = '0' * num
     flasks = dict()
     flasks['0'] = list()
-    print('Enter flasks:')
+    view.print_text('Enter flasks:')
     for i in range(num):
-        print(f'{symbols}\n{amount}')
+        view.print_text(f'{view.color_string(symbols)}\n{amount}')
         flask = input(f'{i + 1}: ').upper()
         if check_flask(flask, symbols):
             if flasks['0']:
@@ -136,7 +142,7 @@ def create_game(num='0', **kwargs):
             else:
                 flasks['0'] = [flask]
         while not check_flask(flask, symbols):
-            print('Wrong input')
+            view.print_text('Wrong input', 'critical')
             flask = input(f'{i + 1}: ').upper()
             if check_flask(flask, symbols):
                 if flasks['0']:
@@ -148,8 +154,6 @@ def create_game(num='0', **kwargs):
             if symbols[j] in flask:
                 q[j] += flask.count(symbols[j])
         amount = ''.join(list(map(str, q)))
-    flasks['0'].append(EMPTY_FLASK)
-    flasks['0'].append(EMPTY_FLASK)
     menu(loader.load_menu('create'), '0', **flasks)
 
 
@@ -169,31 +173,18 @@ def check_flask(flask: str, symbols: str) -> int:
     return 1
 
 
-def show_flasks(flasks: list):
-    one_row = len(flasks) // 2 + len(flasks) % 2
-    for i in range(one_row):
-        print(f'{i + 1} - [{flasks[i].upper().replace(" ", ".")}]', end='')
-        if one_row + i < len(flasks):
-            print(f'\t\t{one_row + i + 1} - [{flasks[one_row + i].upper().replace(" ", ".")}]')
-        else:
-            print('\n')
-
-
 def load_flask(num='z', **kwargs):
     flasks = loader.load_flasks()
-    print('Total flasks:', len(flasks))
+    view.print_text(f'Total flasks: {len(flasks)}')
     flask = None
     while flask is None:
         num = input('Enter flask number: ')
         flask = flasks.get(num, None)
         if flask is None:
-            print('Wrong number')
-    show_flasks(flasks[num])
+            view.print_text('Wrong number', 'critical')
+    view.show_flasks(flasks[num])
     if flasks[num][-1] == 'test':
         flasks[num] = flasks[num][:-1]
-    else:
-        flasks[num].append(EMPTY_FLASK)
-        flasks[num].append(EMPTY_FLASK)
     menu(loader.load_menu('load'), num, **flasks)
 
 
@@ -204,11 +195,11 @@ def flask_number() -> int:
         while not num.isdigit():
             num = input('Number of flasks (4 - 15): ')
             if not num.isdigit():
-                print('Please enter number of flasks')
+                view.print_text('Please enter number of flasks', 'warning')
         flask = int(num)
         if 16 > flask > 3:
             break
-        print('Wrong number of flask!')
+        view.print_text('Wrong number of flask!', 'critical')
         num = 'a'
     return flask
 
@@ -217,24 +208,24 @@ def menu(menu_items: list, num='0', **kwargs):
     while True:
         for i in range(len(menu_items)):
             if i == len(menu_items) - 1:
-                print(f'0 - {menu_items[i][0]}')
+                view.print_text(f'0 - {menu_items[i][0]}')
             else:
-                print(f'{i + 1} - {menu_items[i][0]}')
+                view.print_text(f'{i + 1} - {menu_items[i][0]}')
         item = input('Your choice: ')
         if not item.isdigit():
-            print('Please enter number from the list')
+            view.print_text('Please enter number from the list', 'warning')
         elif 0 < int(item) < len(menu_items):
             func = menu_items[int(item) - 1][1]
             if func == 'dummy':
-                print('Under construction')
+                view.print_text('Under construction', 'warning')
             else:
                 func = eval(func)
                 func(num, **kwargs)
         elif item == '0':
             break
         else:
-            print('Wrong number')
-        print()
+            view.print_text('Wrong number', 'critical')
+        view.print_text('')
 
 
 def main_menu():
