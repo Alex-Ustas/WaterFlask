@@ -12,25 +12,25 @@ COLORSET = {
     'D': ['YELLOW', 'NORMAL'],
     'E': ['MAGENTA', 'NORMAL'],
     'F': ['CYAN', 'NORMAL'],
-    'G': ['RED', 'BRIGHT'],
-    'H': ['GREEN', 'BRIGHT'],
-    'I': ['BLUE', 'BRIGHT'],
+    'G': ['WHITE', 'NORMAL'],
+    'H': ['LIGHTGREEN_EX', 'NORMAL'],
+    'I': ['GREEN', 'BRIGHT'],
     'J': ['YELLOW', 'BRIGHT'],
     'K': ['MAGENTA', 'BRIGHT'],
-    'L': ['LIGHTGREEN_EX', 'NORMAL'],
-    'M': ['WHITE', 'BRIGHT'],
+    'L': ['WHITE', 'BRIGHT'],
+    'M': ['BLUE', 'BRIGHT'],
     'N': ['CYAN', 'BRIGHT'],
     'O': ['LIGHTRED_EX', 'NORMAL'],
 }
 
 
 def print_text(text, view='normal'):
-    if view == 'normal':
-        print(text)
-    elif view == 'critical':
+    if view == 'critical':
         print(f'{Fore.RED}{text}')
     elif view == 'warning':
         print(f'{Fore.YELLOW}{text}')
+    else:
+        print(text)
 
 
 def color_char(char: str) -> str:
