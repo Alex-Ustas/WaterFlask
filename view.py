@@ -25,10 +25,16 @@ COLORSET = {
 
 
 def print_text(text, view='normal'):
+    """Print text \n
+    view=critical - red text \n
+    view=warning - yellow text \n
+    view=ok - green text"""
     if view == 'critical':
         print(f'{Fore.RED}{text}')
     elif view == 'warning':
         print(f'{Fore.YELLOW}{text}')
+    elif view == 'ok':
+        print(f'{Fore.GREEN}{text}')
     else:
         print(text)
 

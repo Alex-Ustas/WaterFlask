@@ -4,6 +4,79 @@ COLORS = 4
 EMPTY_FLASK = ' ' * COLORS
 
 
+def gameplay(num: str, **flasks):
+    flasks = flasks[num].copy()
+    flasks.append(EMPTY_FLASK)
+    flasks.append(EMPTY_FLASK)
+    view.show_flasks(flasks)
+
+    delimiter = ' .,-_>'
+    steps = dict()
+    while True:
+        step = input('Enter step\n(from to, r - back one step, s - Steps, 0 - Exit): ').strip()
+        if step == '0':
+            break
+        if step.lower() == 'r':
+            if len(steps) == 0:
+                view.print_text("Still no one step", 'warning')
+                continue
+            last_step = max(steps.keys())
+            flasks = steps[last_step][1]
+            steps.pop(last_step)
+            view.show_steps(steps)
+            continue
+        if step.lower() == 's':
+            if len(steps) == 0:
+                view.print_text("Still no one step", 'warning')
+                continue
+            view.show_steps(steps)
+            continue
+        for sep in delimiter:
+            if sep in step:
+                step = step.split(sep)
+                break
+        else:
+            view.print_text('Wrong input', 'critical')
+            continue
+        if len(step) != 2:
+            view.print_text('Wrong input', 'critical')
+            continue
+        flag = True
+        for part in step:
+            if not part.isdigit():
+                flag = False
+                break
+        if not flag:
+            view.print_text('Wrong input', 'critical')
+            continue
+        step = list(map(int, step))
+        if step[0] == 0 or step[1] == 0 or step[0] == step[1] or step[0] > len(flasks) or step[1] > len(flasks):
+            view.print_text('Wrong flask number', 'critical')
+            continue
+        new = list(flask.strip() for flask in flasks)
+        if len(new[step[0] - 1]) == 0 or len(new[step[1] - 1]) == COLORS:
+            view.print_text("Wrong step, can't move color", 'critical')
+            continue
+        color = new[step[0] - 1][-1]
+        if len(new[step[1] - 1]) > 0:
+            if new[step[1] - 1][-1] != color:
+                view.print_text("Wrong step, can't move color", 'critical')
+                continue
+        for i in range(len(new)):
+            if i == step[0] - 1:
+                new[i] = new[i][:-1]
+            elif i == step[1] - 1:
+                new[i] += color
+        for i in range(len(flasks)):
+            flasks[i] = new[i] + ' ' * (COLORS - len(new[i]))
+        last_step = 0 if steps == {} else max(steps.keys())
+        steps[last_step + 1] = [f'{step[0]} -> {step[1]}', new]
+        view.show_flasks(flasks)
+        if game_over(flasks):
+            view.print_text('Game completed! You win!', 'ok')
+            break
+
+
 def game_over(flasks: list) -> bool:
     for flask in flasks:
         if flask != '':

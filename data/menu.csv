@@ -1,4 +1,4 @@
 main;Create,create_game;Generate,generate_game;Load,load_flask;Help,dummy;Exit,break
-create;Play,dummy;Show steps,solve;Save,save_flask;Back,break
+create;Play,gameplay;Show steps,solve;Save,save_flask;Back,break
 generate;Generate,dummy;Back,break
-load;Play,dummy;Show steps,solve;Back,break
+load;Play,gameplay;Show steps,solve;Back,break
