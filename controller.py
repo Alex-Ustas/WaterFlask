@@ -1,3 +1,4 @@
+import random
 import loader, view
 
 COLORS = 4
@@ -76,7 +77,7 @@ def gameplay(num: str, **flasks):
         steps[last_step + 1] = [f'{step[0]} -> {step[1]}', new]
         view.show_flasks(flasks)
         if game_over(flasks):
-            view.print_text('Game completed! You win!', 'ok')
+            view.print_text('The game is over! You win!', 'ok')
             break
 
 
@@ -198,10 +199,28 @@ def solving(flasks: list, steps: dict, cases: list, status: str) -> (list, dict,
 
 
 def generate_game(num='0', **flasks):
-    view.show_colors()
+    num = flask_number()
+    symbols = list(chr(i) for i in range(ord('A'), ord('A') + num))
+    symbols = ''.join(symbols)
+    amount = '0' * num
+    count = 0
+    color_string = ''
+    while count < num * COLORS:
+        pos = random.randrange(len(symbols))
+        while amount[pos] == str(COLORS):
+            pos = random.randrange(len(symbols))
+        color_string += symbols[pos]
+        q = list(map(int, list(j for j in amount)))
+        q[pos] += 1
+        amount = ''.join(list(map(str, q)))
+        count += 1
+    flasks = dict()
+    flasks['0'] = list(color_string[i * COLORS:(i + 1) * COLORS] for i in range(num))
+    view.show_flasks(flasks['0'])
+    menu(loader.load_menu('generate'), '0', **flasks)
 
 
-def create_game(num='0', **kwargs):
+def create_game(num='0', **flasks):
     num = flask_number()
     symbols = list(chr(i) for i in range(ord('A'), ord('A') + num))
     symbols = ''.join(symbols)
