@@ -12,21 +12,24 @@ def gameplay(num: str, **flasks):
 
     delimiter = ' .,-_>'
     steps = dict()
+    steps[0] = ['begin', flasks.copy()]
     while True:
         step = input('Enter step\n(from to, r - back one step, s - Steps, 0 - Exit): ').strip()
         if step == '0':
             break
         if step.lower() == 'r':
-            if len(steps) == 0:
+            if len(steps) < 2:
                 view.print_text("Still no one step", 'warning')
                 continue
             last_step = max(steps.keys())
-            flasks = steps[last_step][1]
+            new = steps[last_step - 1][1]
             steps.pop(last_step)
-            view.show_steps(steps)
+            for i in range(len(flasks)):
+                flasks[i] = new[i] + ' ' * (COLORS - len(new[i]))
+            view.show_flasks(flasks)
             continue
         if step.lower() == 's':
-            if len(steps) == 0:
+            if len(steps) < 2:
                 view.print_text("Still no one step", 'warning')
                 continue
             view.show_steps(steps)
