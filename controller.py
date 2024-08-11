@@ -1,8 +1,11 @@
 import random
-import loader, view
+import loader
+import view
+import time
 
 COLORS = 4
 EMPTY_FLASK = ' ' * COLORS
+current_time = time.time()
 
 
 def gameplay(num: str, **flasks):
@@ -91,22 +94,31 @@ def game_over(flasks: list) -> bool:
     return False
 
 
+def flask_to_str(flask: list) -> str:
+    return ''.join(map(lambda f: f.ljust(COLORS), flask))
+
+
 def solve(num: str, **flasks):
     flasks[num].append(EMPTY_FLASK)
     flasks[num].append(EMPTY_FLASK)
     view.show_flasks(flasks[num])
     flasks[num] = list(i.strip() for i in flasks[num])
-    _, steps, __, status = solving(flasks[num], {}, [], 'In')
+    _, steps, cases, status = solving(flasks[num], {}, set(), 'In')
     if status == 'Ok':
         view.show_steps(steps)
+        view.print_text(f'Number of cases: {len(cases)}', 'ok')
         loader.save_steps(steps, flasks[num], int(num))
     else:
         view.print_text('Cannot be resolved!', 'critical')
 
 
-def solving(flasks: list, steps: dict, cases: list, status: str) -> (list, dict, list, str):
+def solving(flasks: list, steps: dict, cases: set, status: str) -> (list, dict, set, str):
     if game_over(flasks):
         return flasks, steps, cases, 'Ok'
+    if len(cases) % 100_000 == 0 and cases:
+        view.print_text(
+            f'{len(cases):7,d} cases, {time.strftime("%H:%M:%S", time.gmtime(time.time() - current_time))}',
+            'warning')
 
     for i in range(len(flasks)):
         flask_from = flasks[i]
@@ -125,12 +137,13 @@ def solving(flasks: list, steps: dict, cases: list, status: str) -> (list, dict,
                                 new.append(color * (len(flask_from) + len(flask_to)))
                             else:
                                 new.append(flasks[k])
-                        if new in cases:
+                        new_str = flask_to_str(new)
+                        if new_str in cases:
                             continue
                         else:
                             last_step = 0 if steps == {} else max(steps.keys())
                             steps[last_step + 1] = [f'{i + 1} -> {j + 1}', new]
-                            cases.append(new)
+                            cases.add(new_str)
                             new, steps, cases, status = solving(new, steps, cases, 'In')
                             if status == 'Ok':
                                 return new, steps, cases, 'Ok'
@@ -154,12 +167,13 @@ def solving(flasks: list, steps: dict, cases: list, status: str) -> (list, dict,
                                 new.append(color * COLORS)
                             else:
                                 new.append(flasks[k])
-                        if new in cases:
+                        new_str = flask_to_str(new)
+                        if new_str in cases:
                             continue
                         else:
                             last_step = 0 if steps == {} else max(steps.keys())
                             steps[last_step + 1] = [f'{i + 1} -> {j + 1}', new]
-                            cases.append(new)
+                            cases.add(new_str)
                             new, steps, cases, status = solving(new, steps, cases, 'In')
                             if status == 'Ok':
                                 return new, steps, cases, 'Ok'
@@ -184,12 +198,13 @@ def solving(flasks: list, steps: dict, cases: list, status: str) -> (list, dict,
                             new.append(flasks[k] + color)
                         else:
                             new.append(flasks[k])
-                    if new in cases:
+                    new_str = flask_to_str(new)
+                    if new_str in cases:
                         continue
                     else:
                         last_step = 0 if steps == {} else max(steps.keys())
                         steps[last_step + 1] = [f'{i + 1} -> {j + 1}', new]
-                        cases.append(new)
+                        cases.add(new_str)
                         new, steps, cases, status = solving(new, steps, cases, 'In')
                         if status == 'Ok':
                             return new, steps, cases, 'Ok'

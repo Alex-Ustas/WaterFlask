@@ -66,10 +66,5 @@ def save_steps(steps: dict, flasks: list, num: int):
 
 
 def flasks_to_line(flasks: list) -> str:
-    line = ''
-    for flask in flasks:
-        flask = flask.strip().upper()
-        if len(flask) < 4:
-            flask += '.' * (4 - len(flask))
-        line += f' [{flask}]'
-    return line.strip()
+    line_flask = ['[' + flask.strip().upper().ljust(4, ".") + ']' for flask in flasks]
+    return ' '.join(line_flask)

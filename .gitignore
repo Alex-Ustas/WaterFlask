@@ -10,7 +10,9 @@
 *.user
 *.userosscache
 *.sln.docstates
+temp*.py
 bot_token.py
+data/*.png
 
 # Python build & dist files
 build/
